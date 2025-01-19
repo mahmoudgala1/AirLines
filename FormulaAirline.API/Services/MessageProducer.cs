@@ -13,11 +13,13 @@ public class MessageProducer : IMessageProducer
       HostName = "localhost",
       Port = 5672,
     };
-    var con = await factory.CreateConnectionAsync();
-    var channel = await con.CreateChannelAsync();
-    await channel.QueueDeclareAsync("bookings", durable: true, exclusive: true);
+    using var connection = await factory.CreateConnectionAsync();
+    using var channel = await connection.CreateChannelAsync();
+    await channel.QueueDeclareAsync(queue: "bookings", durable: false, exclusive: false, autoDelete: false,
+        arguments: null);
     var jsonString = JsonSerializer.Serialize(message);
+    Console.WriteLine(jsonString);
     var body = Encoding.UTF8.GetBytes(jsonString);
-    await channel.BasicPublishAsync("", "Bookings", body: body);
+    await channel.BasicPublishAsync("", "bookings", body: body);
   }
 }
